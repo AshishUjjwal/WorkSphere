@@ -1,28 +1,45 @@
+# Port configuration for the API Gateway server to listen on
 server:
   port: 9090
 
 spring:
+  # The name of this application when it registers with Eureka Service Registry
   application:
     name: ApiGateway
   cloud:
     gateway:
+      # Defining the routing logic for incoming requests
       routes:
+        # Route for Employee Service
         - id: employee_route
+          # 'lb://' means load balance. It asks Eureka for the location of the 'EMPLOYEE' service.
           uri: lb://EMPLOYEE
           predicates:
+            # If the request URL starts with '/employee/', forward it to this service
             - Path=/employee/**
+            
+        # Route for Address Service
         - id: address_route
+          # Forwards request to the 'ADDRESS' service registered in Eureka
           uri: lb://ADDRESS
           predicates:
+            # If the request URL starts with '/address/', forward it to this service
             - Path=/address/**
+            
+        # Route for Auth Service
         - id: auth_route
+          # Forwards request to the 'AUTHSERVICE' registered in Eureka
           uri: lb://AUTHSERVICE
           predicates:
+            # If the request URL starts with '/auth/', forward it to this service
             - Path=/auth/**
 
+# Configuration for Eureka Client (so Gateway can find other microservices)
 eureka:
   client:
     serviceUrl:
+      # The URL where Eureka Server is running
       defaultZone: http://localhost:8761/eureka/
   instance:
+    # Use the IP address for registration instead of the hostname
     preferIpAddress: true
