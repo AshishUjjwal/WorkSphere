@@ -16,6 +16,7 @@ spec:
       - name: eureka-server
         # Make sure this matches your Docker Hub username if it is not ashishujjwal
         image: ashishujjwal/eurekaserver:latest
+        imagePullPolicy: IfNotPresent
         env:
         - name: EUREKA_INSTANCE_HOSTNAME
           value: "eureka-server"
