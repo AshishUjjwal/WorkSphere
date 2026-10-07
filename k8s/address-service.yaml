@@ -16,17 +16,14 @@ spec:
       containers:
       - name: address-service
         image: ashishujjwal/address:latest
+        envFrom:
+        - configMapRef:
+            name: ems-config
+        - secretRef:
+            name: ems-secret
         env:
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:mysql://mysql-server:3306/address_db?createDatabaseIfNotExist=true"
-        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-          value: "http://eureka-server:8761/eureka/"
-        - name: JAVA_TOOL_OPTIONS
-          value: "-Xmx256m -Xms128m"
-        - name: EUREKA_CLIENT_EUREKASERVER_CONNECTTIMEOUTSECONDS
-          value: "60"
-        - name: EUREKA_CLIENT_EUREKASERVER_READTIMEOUTSECONDS
-          value: "60"
         ports:
         - containerPort: 8082
 ---

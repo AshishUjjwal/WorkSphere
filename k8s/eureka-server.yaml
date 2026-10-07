@@ -18,11 +18,12 @@ spec:
         # Make sure this matches your Docker Hub username if it is not ashishujjwal
         image: ashishujjwal/eurekaserver:latest
         imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: ems-config
         env:
         - name: EUREKA_INSTANCE_HOSTNAME
           value: "eureka-server"
-        - name: JAVA_TOOL_OPTIONS
-          value: "-Xmx256m -Xms128m"
         - name: SERVER_ADDRESS
           value: "0.0.0.0"
         ports:

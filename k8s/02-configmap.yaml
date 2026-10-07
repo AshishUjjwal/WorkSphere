@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ems-config
+  namespace: ems-prod
+data:
+  SPRING_DATASOURCE_USERNAME: "root"
+  SPRING_DATA_REDIS_HOST: "redis-server"
+  SPRING_DATA_REDIS_PORT: "6379"
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-server:8761/eureka/"
+  EUREKA_CLIENT_EUREKASERVER_CONNECTTIMEOUTSECONDS: "60"
+  EUREKA_CLIENT_EUREKASERVER_READTIMEOUTSECONDS: "60"
+  JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"

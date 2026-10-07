@@ -16,15 +16,9 @@ spec:
       containers:
       - name: api-gateway
         image: ashishujjwal/apigateway:latest
-        env:
-        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-          value: "http://eureka-server:8761/eureka/"
-        - name: JAVA_TOOL_OPTIONS
-          value: "-Xmx256m -Xms128m"
-        - name: EUREKA_CLIENT_EUREKASERVER_CONNECTTIMEOUTSECONDS
-          value: "60"
-        - name: EUREKA_CLIENT_EUREKASERVER_READTIMEOUTSECONDS
-          value: "60"
+        envFrom:
+        - configMapRef:
+            name: ems-config
         ports:
         - containerPort: 9090
 ---
