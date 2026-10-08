@@ -17,11 +17,14 @@ import com.microservice.Employee.feign.AddressClient;
 import com.microservice.Employee.dto.AddressResponseDto;
 import com.microservice.Employee.dto.EmployeeWithAddressDto;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service class containing business logic for Employee operations.
  * It acts as an intermediary between the EmployeeController and EmployeeRepository.
  */
 @Service 
+@Transactional
 public class EmployeeService {
 
     @Autowired
