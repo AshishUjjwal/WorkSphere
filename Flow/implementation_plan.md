@@ -90,16 +90,22 @@ This document outlines the step-by-step roadmap to build, secure, containerize, 
 *Refining the architecture with industry-standard resilience and cleaner code.*
 
 ### 8.1 Declarative REST Clients (OpenFeign)
+*   **Why we use it:** `RestTemplate` requires writing bulky, repetitive HTTP boilerplate code. OpenFeign allows us to define HTTP calls using simple, clean Java interfaces.
 *   **Goal:** Replace the manual `RestTemplate` logic with cleaner interfaces.
-*   **Tasks:** Add `spring-cloud-starter-openfeign`. Create an interface annotated with `@FeignClient(name="ADDRESS")` to automatically handle HTTP calls and load balancing without boilerplate code.
+*   **Tasks:** Add `spring-cloud-starter-openfeign`. Create an interface annotated with `@FeignClient` to automatically handle HTTP calls.
+*   **⚠️ K8s Collision & Resolution:** OpenFeign natively relies on Eureka to resolve IPs. Since we disabled Eureka in our Cloud-Native mode, we will use `@FeignClient(name="address", url="${address.service.url}")` and inject the native K8s DNS URL via our `02-configmap.yaml`.
 
 ### 8.2 Resilience & Fault Tolerance (Circuit Breakers)
+*   **Why we use it:** If the Address Service goes down, the Employee Service will hang while waiting for a response, eventually crashing itself. Circuit breakers "trip" the connection and provide fallback data instantly to save the system.
 *   **Goal:** Prevent cascading failures when a microservice is down or slow.
-*   **Tasks:** Implement `Resilience4j`. Wrap the inter-service calls with `@CircuitBreaker` and `@Retry` to provide default "fallback" data instead of hanging requests and crashing the system.
+*   **Tasks:** Implement `Resilience4j`. Wrap the inter-service calls with `@CircuitBreaker` and `@Retry` to provide default "fallback" data instead of hanging requests.
+*   *(No K8s collision here; this runs purely inside the JVM).*
 
 ### 8.3 Asynchronous Processing & Multithreading
+*   **Why we use it:** Processing heavy background tasks synchronously blocks the main HTTP thread, slowing down user response times. Async processing offloads this to background threads.
 *   **Goal:** Improve application performance by running non-blocking background tasks.
-*   **Tasks:** Enable `@EnableAsync` in Spring Boot. Implement `@Async` methods for tasks that don't need to block the main thread (like sending emails or processing logs). Configure a `ThreadPoolTaskExecutor` to understand how threads are managed in Java. Experience the difference between Synchronous (waiting for a task to finish) and Asynchronous (fire-and-forget) operations.
+*   **Tasks:** Enable `@EnableAsync` in Spring Boot. Implement `@Async` methods. Configure a `ThreadPoolTaskExecutor`.
+*   **⚠️ K8s Collision & Resolution:** Creating too many async background threads consumes extra RAM. This might cause the Pod to exceed its Kubernetes `limits: memory: "384Mi"`, resulting in a fatal `OOMKilled` crash. We will need to monitor thread creation and potentially increase the memory limit in `employee-service.yaml`.
 
 ---
 
@@ -107,8 +113,10 @@ This document outlines the step-by-step roadmap to build, secure, containerize, 
 *Massive scale, asynchronous processing, and enterprise security.*
 
 ### 9.1 Event-Driven Architecture (Kafka / RabbitMQ)
+*   **Why we use it:** Synchronous REST calls tightly couple services together. Kafka allows Service A to shout "Employee Created!" into a message queue, and Service B can process it later whenever it has free time.
 *   **Goal:** Move from synchronous REST calls to asynchronous message queues.
-*   **Tasks:** Install Apache Kafka. Implement Producers and Consumers to let microservices communicate by publishing and subscribing to events (e.g., "EmployeeCreatedEvent") without waiting for immediate responses.
+*   **Tasks:** Install Apache Kafka. Implement Producers and Consumers to publish and subscribe to events.
+*   **⚠️ K8s Collision & Resolution:** Kafka is a stateful application. We will need to write advanced K8s `StatefulSet` and `Service` manifests to deploy Kafka and Zookeeper inside our cluster before the Java apps can connect to it.
 
 ### 9.2 Advanced Spring Security (OAuth2 / OIDC)
 *   **Goal:** Implement enterprise-grade Single Sign-On (SSO).
