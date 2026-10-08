@@ -21,8 +21,11 @@
 
 ## 🏗️ Architecture
 
+### 1. Spring Cloud Local Architecture
 ![Microservices Architecture](./Flow/Microservices%20Arch.png)
 
+### 2. Kubernetes Cloud-Native Architecture
+![Kubernetes Architecture](./Flow/Kubernetes%20Microservices%20Lifecycle%20and%20Runtime%20Flow.png)
 The system consists of five distinct microservices communicating seamlessly:
 
 1. **API Gateway** (Port: `9090`): The single entry point for all client requests. It handles intelligent routing, rate limiting, IP logging, and global JWT authentication.
