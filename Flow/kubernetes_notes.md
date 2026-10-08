@@ -386,3 +386,86 @@ spec:
 **A:** Spring Boot has a powerful built-in feature called **Relaxed Binding**. When the API Gateway starts, it reads the Kubernetes ConfigMap and automatically translates the environment variables back into YAML paths. 
 Because your Java `application.yml` has a list of routes, the environment variable `SPRING_CLOUD_GATEWAY_ROUTES_0_URI` perfectly maps to array index `0` (`spring.cloud.gateway.routes[0].uri`). 
 Spring Boot secretly reaches into index 0 of your configuration and completely overwrites `lb://EMPLOYEE` with `http://employee-service:8081` in memory before the application even begins accepting traffic!
+
+---
+
+## 8. TOP 30 KUBERNETES INTERVIEW QUESTIONS & ANSWERS
+
+### Core Architecture & Components
+1. **What is Kubernetes?** 
+   An open-source container orchestration engine for automating deployment, scaling, and management of containerized applications.
+2. **What are the Master Node components?** 
+   API Server (front-end), etcd (key-value store database), Scheduler (assigns pods to nodes), and Controller Manager (maintains desired state).
+3. **What is the role of the Kubelet?** 
+   It is the primary "node agent" running on every worker node. It ensures that containers are running and healthy inside Pods.
+4. **What is `etcd`?** 
+   The highly available key-value store used as Kubernetes' backing store for all cluster data (the "brain's memory").
+5. **What is `kube-proxy`?** 
+   A network proxy running on each node that implements Kubernetes Service concepts (maintains network rules to allow communication).
+
+### Pods & Workloads
+6. **What is a Pod?** 
+   The smallest and simplest Kubernetes object. It represents a single instance of a running process in your cluster, usually containing one container.
+7. **What is a Deployment?** 
+   A higher-level abstraction that manages ReplicaSets and provides declarative updates (rolling updates, rollbacks) for Pods. It is used for stateless apps.
+8. **What is a ReplicaSet?** 
+   Its only purpose is to maintain a stable set of replica Pods running at any given time.
+9. **Deployment vs StatefulSet?** 
+   Deployments are for stateless apps (interchangeable pods). StatefulSets are for stateful apps (databases) requiring sticky identities (e.g., `mysql-0`), ordered deployment, and persistent storage bindings.
+10. **What is a DaemonSet?** 
+    Ensures that exactly one copy of a Pod runs on *all* (or some) physical Nodes in the cluster. Used for monitoring agents (e.g., Prometheus) or log collectors (e.g., Fluentd).
+11. **How do you rollback a Deployment?** 
+    Using `kubectl rollout undo deployment/<name>`.
+12. **How do you troubleshoot a crashing pod?** 
+    First run `kubectl describe pod <name>` to check for events (like OOMKilled or scheduling errors). Then run `kubectl logs <name>` to check application errors.
+
+### Networking
+13. **What is a K8s Service?** 
+    An abstraction that defines a logical set of Pods and a policy by which to access them (provides a stable IP for ephemeral pods).
+14. **ClusterIP vs NodePort vs LoadBalancer?** 
+    - `ClusterIP`: Default, internal access only.
+    - `NodePort`: Exposes the service on a static port on *every* Worker Node's IP.
+    - `LoadBalancer`: Provisions an external load balancer from a cloud provider (AWS/GCP).
+15. **What is an Ingress?** 
+    An API object managing external access to cluster services (usually HTTP/HTTPS). It provides URL-based routing, SSL termination, and name-based virtual hosting.
+16. **Difference between `port`, `targetPort`, and `nodePort`?** 
+    - `port`: The port the Service itself listens on.
+    - `targetPort`: The port the container (Java/Node app) is listening on.
+    - `nodePort`: The port exposed to the outside world on the physical host machine.
+
+### Configuration & Storage
+17. **ConfigMap vs Secret?** 
+    ConfigMaps store non-confidential configuration (URLs, properties). Secrets store sensitive data (passwords, keys) and are base64 encoded by default.
+18. **What is a Persistent Volume (PV)?** 
+    A piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes. It exists independently of any individual Pod.
+19. **What is a Persistent Volume Claim (PVC)?** 
+    A request for storage by a user/Pod. Pods consume node resources, PVCs consume PV resources.
+20. **What are VolumeClaimTemplates?** 
+    Used inside StatefulSets to dynamically create a PVC (and thus a PV) for every single replica pod automatically.
+21. **What is a Namespace?** 
+    A virtual cluster backed by the same physical cluster. Used to divide cluster resources between multiple users or environments (e.g., `dev`, `prod`).
+
+### Scaling & Resources
+22. **What is Horizontal Pod Autoscaler (HPA)?** 
+    Automatically updates a workload resource (like a Deployment) to match demand based on observed CPU/Memory utilization.
+23. **What is the difference between Resource Requests and Limits?** 
+    - `requests`: What the Pod is guaranteed to get (used by the Scheduler to find a node).
+    - `limits`: The absolute maximum the Pod is allowed to use.
+24. **Why are CPU and Memory Limits required for HPA?** 
+    The metrics-server calculates CPU/Memory utilization as a *percentage* of the request/limit. Without them, K8s cannot calculate the percentage and HPA will fail.
+25. **What happens if a Pod exceeds its Memory Limit?** 
+    The Pod is immediately killed by the Linux kernel with an `OOMKilled` (Out Of Memory) error.
+26. **What happens if a Pod exceeds its CPU Limit?** 
+    The Pod is NOT killed. Instead, its CPU usage is "throttled" (slowed down), resulting in poor performance.
+
+### Advanced / Hybrid Scenarios
+27. **Why run NGINX outside K8s if you have an Ingress?** 
+    A standalone NGINX in the DMZ acts as a Web Application Firewall (security), caches heavy static assets, and routes traffic between *multiple* K8s clusters.
+28. **Why is Eureka redundant in Kubernetes?** 
+    Because K8s has built-in Service Discovery (ClusterIP and CoreDNS). Keeping both causes a "Service Discovery Duel".
+29. **What is the Eureka "Danger Window"?** 
+    When a Pod dies, K8s removes it instantly, but Eureka relies on a 30s heartbeat. For 30s, Eureka routes traffic to a dead pod causing `502 Bad Gateway` errors.
+30. **How do you disable Eureka without touching Java code?** 
+    Inject `EUREKA_CLIENT_ENABLED: false` via a ConfigMap, and use Spring Boot's Relaxed Binding to inject direct K8s DNS routes via `SPRING_CLOUD_GATEWAY_ROUTES_X_URI` environment variables.
+31. **What does the `0`, `1`, `2` mean in `SPRING_CLOUD_GATEWAY_ROUTES_0_URI`?** 
+    It is the array index translation from YAML to Linux Environment Variables. Linux doesn't allow brackets like `[0]`. So Spring Boot translates the property `spring.cloud.gateway.routes[0].uri` by making it uppercase, swapping dots for underscores, and removing the brackets, resulting in `SPRING_CLOUD_GATEWAY_ROUTES_0_URI`. This precisely overrides the 1st route in the API Gateway's internal YAML array.
