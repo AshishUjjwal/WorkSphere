@@ -79,12 +79,8 @@ public class EmployeeService {
         EmployeeDto employee = getEmployeeById(id);
         
         // 2. Call Address Microservice using our new Feign Client!
-        AddressResponseDto addressResponse = null;
-        try {
-            addressResponse = addressClient.getAddressByEmployeeId(id);
-        } catch (Exception e) {
-            System.out.println("Address service is down or address not found.");
-        }
+        // The Fallback logic is now completely hidden inside AddressClientFallback.java!
+        AddressResponseDto addressResponse = addressClient.getAddressByEmployeeId(id);
         
         return new EmployeeWithAddressDto(employee, addressResponse);
     }

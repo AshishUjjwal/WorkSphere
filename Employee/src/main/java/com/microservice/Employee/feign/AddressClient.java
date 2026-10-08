@@ -12,7 +12,7 @@ import com.microservice.Employee.dto.AddressResponseDto;
  * If running locally with Eureka, it resolves "ADDRESS".
  * If running in Kubernetes, it reads the ADDRESS_SERVICE_URL from ConfigMap and uses K8s DNS!
  */
-@FeignClient(name = "ADDRESS", url = "${address.service.url:}")
+@FeignClient(name = "ADDRESS", url = "${address.service.url:}", fallback = AddressClientFallback.class)
 public interface AddressClient {
 
     @GetMapping("/v1/address/{id}")
