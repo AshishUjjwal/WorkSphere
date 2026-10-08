@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.web.client.RestTemplate;
+import com.microservice.Employee.feign.AddressClient;
 import com.microservice.Employee.dto.AddressResponseDto;
 import com.microservice.Employee.dto.EmployeeWithAddressDto;
 
@@ -28,7 +28,7 @@ public class EmployeeService {
     private EmployeeRepository repository;
     
     @Autowired
-    private RestTemplate restTemplate;
+    private AddressClient addressClient;
     
     @CacheEvict(value = "employees", allEntries = true)
     public EmployeeDto saveEmployee(EmployeeDto dto) {
@@ -75,45 +75,14 @@ public class EmployeeService {
         // 1. Fetch Employee from our Database
         EmployeeDto employee = getEmployeeById(id);
         
-        // 2. Call Address Microservice using its Eureka registered name "ADDRESS"
-        // The @LoadBalanced RestTemplate will automatically load balance and resolve "ADDRESS" to an actual IP & Port!
+        // 2. Call Address Microservice using our new Feign Client!
         AddressResponseDto addressResponse = null;
         try {
-            addressResponse = restTemplate.getForObject("http://ADDRESS/v1/address/" + id, AddressResponseDto.class);
+            addressResponse = addressClient.getAddressByEmployeeId(id);
         } catch (Exception e) {
             System.out.println("Address service is down or address not found.");
         }
         
         return new EmployeeWithAddressDto(employee, addressResponse);
     }
-
-    /*
-     * =========================================================================
-     * QUICK REST-TEMPLATE REFERENCE:
-     * =========================================================================
-     * 
-     * 1. getForObject(...) 
-     *    - What it does: 
-     *        1. Sends an HTTP GET request to the URL you provide.
-     *        2. Takes the raw JSON text that the server responds with, and automatically 
-     *           converts (maps) it into the Java class you specify (e.g., AddressResponseDto.class).
-     *    - How it converts JSON: 
-     *        Behind the scenes, Spring Boot uses a library called "Jackson" (specifically 
-     *        an ObjectMapper). Jackson looks at the JSON keys (like "street") and searches for 
-     *        an exact matching variable name in your DTO class (String street). If it finds a match, 
-     *        it uses the getter/setter methods to inject the data into your Java object automatically!
-     *    - Example: restTemplate.getForObject("http://ADDRESS/...", AddressResponseDto.class)
-     * 
-     * 2. postForObject(...)
-     *    - Performs an HTTP POST request.
-     *    - Converts your Java Object into JSON, sends it to the server to save, and returns the response.
-     * 
-     * 3. put(...) / delete(...)
-     *    - Performs HTTP PUT (update) or DELETE requests. They do not return data.
-     * 
-     * 4. exchange(...)
-     *    - The "Master Key" method. Can perform any HTTP method (GET, POST, PUT, DELETE).
-     *    - Crucially, it allows you to attach custom HTTP Headers (like Security Authorization tokens).
-     * =========================================================================
-     */
 }

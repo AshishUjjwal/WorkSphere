@@ -90,7 +90,7 @@ This document outlines the step-by-step roadmap to build, secure, containerize, 
 *Refining the architecture with industry-standard resilience and cleaner code.*
 
 ### 8.1 Declarative REST Clients (OpenFeign)
-*   **Why we use it:** `RestTemplate` requires writing bulky, repetitive HTTP boilerplate code. OpenFeign allows us to define HTTP calls using simple, clean Java interfaces.
+*   **Why we use it:** Both `RestTemplate` and `OpenFeign` do the exact same job: **Microservice-to-Microservice communication**. However, `RestTemplate` (the old way) requires writing bulky, repetitive HTTP boilerplate code to build URLs and parse JSON. OpenFeign (the modern way) is a "Declarative" client—you just create a clean Java interface, and Spring writes all the ugly networking code for you behind the scenes!
 *   **Goal:** Replace the manual `RestTemplate` logic with cleaner interfaces.
 *   **Tasks:** Add `spring-cloud-starter-openfeign`. Create an interface annotated with `@FeignClient` to automatically handle HTTP calls.
 *   **⚠️ K8s Collision & Resolution:** OpenFeign natively relies on Eureka to resolve IPs. Since we disabled Eureka in our Cloud-Native mode, we will use `@FeignClient(name="address", url="${address.service.url}")` and inject the native K8s DNS URL via our `02-configmap.yaml`.

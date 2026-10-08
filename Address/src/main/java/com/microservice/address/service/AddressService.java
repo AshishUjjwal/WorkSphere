@@ -14,8 +14,30 @@ public class AddressService {
 
     private final AddressRepository repository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.web.client.RestTemplate restTemplate;
+
+    @org.springframework.beans.factory.annotation.Value("${employee.service.url:http://EMPLOYEE}")
+    private String employeeServiceUrl;
+
     public AddressService(AddressRepository repository) {
         this.repository = repository;
+    }
+
+    /**
+     * VISUAL DEMONSTRATION OF REST TEMPLATE
+     * Reaching out to the Employee Service to fetch a name!
+     */
+    public String getEmployeeNameForAddress(Long employeeId) {
+        try {
+            com.microservice.address.dto.EmployeeResponseDto response = restTemplate.getForObject(
+                employeeServiceUrl + "/v1/Data/getEmployee/" + employeeId,
+                com.microservice.address.dto.EmployeeResponseDto.class
+            );
+            return response != null ? response.getName() : "Unknown";
+        } catch (Exception e) {
+            return "Employee Service Down";
+        }
     }
 
     public AddressDto saveAddress(AddressDto addressDto) {

@@ -23,3 +23,7 @@ data:
   SPRING_CLOUD_GATEWAY_ROUTES_0_URI: "http://employee-service:8081"
   SPRING_CLOUD_GATEWAY_ROUTES_1_URI: "http://address-service:8082"
   SPRING_CLOUD_GATEWAY_ROUTES_2_URI: "http://auth-service:8083"
+  
+  # Feign Client overrides (Direct K8s DNS)
+  ADDRESS_SERVICE_URL: "http://address-service:8082"
+  EMPLOYEE_SERVICE_URL: "http://employee-service:8081"

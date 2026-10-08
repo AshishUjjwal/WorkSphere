@@ -34,6 +34,12 @@ public class AddressController {
         return ResponseEntity.ok(service.getAllAddresses());
     }
 
+    // VISUAL DEMONSTRATION ENDPOINT
+    @GetMapping("/employee-name/{id}")
+    public ResponseEntity<String> getEmployeeName(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getEmployeeNameForAddress(id));
+    }
+
     @GetMapping("/{id}")
     @Cacheable(value = "addresses", key = "#id")
     public ResponseEntity<AddressDto> getAddressById(@PathVariable Long id) {
