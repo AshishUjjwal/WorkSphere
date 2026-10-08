@@ -4,7 +4,7 @@ metadata:
   name: eureka-server
   namespace: ems-prod
 spec:
-  replicas: 1
+  replicas: 0 # Eureka is disabled, kept for learning purposes
   selector:
     matchLabels:
       app: eureka-server
