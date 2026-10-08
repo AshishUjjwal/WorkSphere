@@ -33,10 +33,17 @@ public class EmployeeService {
     @Autowired
     private AddressClient addressClient;
     
+    @Autowired
+    private NotificationService notificationService;
+    
     @CacheEvict(value = "employees", allEntries = true)
     public EmployeeDto saveEmployee(EmployeeDto dto) {
         Employee employeeEntity = AppUtils.dtoToEntity(dto);  // Convert DTO to Entity
-        Employee savedEntity = repository.save(employeeEntity); // Save Entity to database. The repository automatically writes an INSERT INTO ... SQL query behind the scenes and saves the employee to your database.
+        Employee savedEntity = repository.save(employeeEntity); // Save Entity to database
+        
+        // Trigger the background task. This will return instantly!
+        notificationService.sendWelcomeEmail(savedEntity.getName());
+        
         return AppUtils.entityToDto(savedEntity); // Convert Entity to DTO
     }
 
