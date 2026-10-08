@@ -89,6 +89,35 @@ To ensure proper service discovery, start the microservices in the following ord
 
 Check the Eureka Dashboard at `http://localhost:8761` to verify all services are registered (API-GATEWAY, AUTH-SERVICE, EMPLOYEE, ADDRESS).
 
+### ☸️ Running on Kubernetes (Cloud-Native Mode)
+
+This project has been fully containerized and configured for a production-grade Kubernetes environment. The K8s deployment gracefully bypasses Eureka in favor of lightning-fast native Kubernetes DNS and includes advanced features like StatefulSets, ConfigMaps, Secrets, Ingress Controllers, and Horizontal Pod Autoscalers (HPA).
+
+To deploy the entire infrastructure:
+
+1. **Apply the Core Configurations:**
+   ```bash
+   kubectl apply -f k8s/01-namespace.yaml
+   kubectl apply -f k8s/02-configmap.yaml
+   kubectl apply -f k8s/03-secret.yaml
+   ```
+
+2. **Deploy the Stateful Databases (MySQL & Redis):**
+   ```bash
+   kubectl apply -f k8s/mysql.yaml
+   kubectl apply -f k8s/redis.yaml
+   ```
+
+3. **Deploy the Microservices & API Gateway:**
+   ```bash
+   kubectl apply -f k8s/auth-service.yaml
+   kubectl apply -f k8s/address-service.yaml
+   kubectl apply -f k8s/employee-service.yaml
+   kubectl apply -f k8s/api-gateway.yaml
+   ```
+
+*(Note: Eureka is intentionally disabled in this mode. The Gateway routes are dynamically overridden using 12-Factor App principles via the Kubernetes ConfigMap!)*
+
 ## 📡 API Endpoints
 
 All requests should be routed through the **API Gateway** on port `9090`.
