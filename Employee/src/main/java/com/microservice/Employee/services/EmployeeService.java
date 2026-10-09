@@ -36,15 +36,30 @@ public class EmployeeService {
     @Autowired
     private NotificationService notificationService;
     
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
+    // --- V1 Flow: Uses in-memory @Async ---
     @CacheEvict(value = "employees", allEntries = true)
     public EmployeeDto saveEmployee(EmployeeDto dto) {
-        Employee employeeEntity = AppUtils.dtoToEntity(dto);  // Convert DTO to Entity
-        Employee savedEntity = repository.save(employeeEntity); // Save Entity to database
+        Employee employeeEntity = AppUtils.dtoToEntity(dto);
+        Employee savedEntity = repository.save(employeeEntity); 
         
-        // Trigger the background task. This will return instantly!
         notificationService.sendWelcomeEmail(savedEntity.getName());
+        return AppUtils.entityToDto(savedEntity); 
+    }
+
+    // --- V2 Flow: Uses Apache Kafka (Event-Driven) ---
+    // @CacheEvict(value = "employees", allEntries = true)
+    public EmployeeDto saveEmployeeV2(EmployeeDto dto) {
+        Employee employeeEntity = AppUtils.dtoToEntity(dto);
+        Employee savedEntity = repository.save(employeeEntity); 
+        EmployeeDto savedDto = AppUtils.entityToDto(savedEntity);
         
-        return AppUtils.entityToDto(savedEntity); // Convert Entity to DTO
+        // Broadcast the event to Kafka! We don't care who is listening.
+        kafkaProducerService.sendEmployeeCreatedEvent(savedDto);
+        
+        return savedDto;
     }
 
     @Cacheable(value = "employees")

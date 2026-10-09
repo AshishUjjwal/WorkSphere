@@ -35,9 +35,17 @@ public class EmployeeController {
         return "Employee";
     }
 
+    // --- V1 Flow (In-Memory @Async) ---
     @PostMapping("/saveEmployee")
     public ResponseEntity<EmployeeDto> saveEmployee(@RequestBody EmployeeDto dto){
         EmployeeDto employee = service.saveEmployee(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(employee);
+    }
+
+    // --- V2 Flow (Kafka Event-Driven) ---
+    @PostMapping("/v2/saveEmployee")
+    public ResponseEntity<EmployeeDto> saveEmployeeV2(@RequestBody EmployeeDto dto){
+        EmployeeDto employee = service.saveEmployeeV2(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(employee);
     }
 
