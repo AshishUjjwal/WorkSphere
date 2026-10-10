@@ -12,27 +12,38 @@ spring:
       routes:
         # Route for Employee Service
         - id: employee_route
-          # 'lb://' means load balance. It asks Eureka for the location of the 'EMPLOYEE' service.
           uri: lb://EMPLOYEE
           predicates:
-            # If the request URL starts with '/employee/', forward it to this service
             - Path=/employee/**
+          filters:
+            - RewritePath=/employee/(?<segment>.*), /$\{segment}
             
         # Route for Address Service
         - id: address_route
-          # Forwards request to the 'ADDRESS' service registered in Eureka
           uri: lb://ADDRESS
           predicates:
-            # If the request URL starts with '/address/', forward it to this service
             - Path=/address/**
+          filters:
+            - RewritePath=/address/(?<segment>.*), /$\{segment}
             
         # Route for Auth Service
         - id: auth_route
-          # Forwards request to the 'AUTHSERVICE' registered in Eureka
           uri: lb://AUTHSERVICE
           predicates:
-            # If the request URL starts with '/auth/', forward it to this service
             - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<segment>.*), /$\{segment}
+
+# Swagger UI Aggregation Configuration
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Employee Service
+        url: /employee/v3/api-docs
+      - name: Address Service
+        url: /address/v3/api-docs
+      - name: Auth Service
+        url: /auth/v3/api-docs
 
 # Configuration for Eureka Client (so Gateway can find other microservices)
 eureka:
